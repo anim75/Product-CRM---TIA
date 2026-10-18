@@ -73,3 +73,11 @@ Run `node verify-exports.cjs` for date/product/CSV cases. Browser checks also ex
 Account screen fit and transparent portrait
 -------------------------------------------
 The account screen uses a transparent portrait cutout with no enclosing frame, border or shadow. Desktop retains the live portfolio cards; phone layouts use a compact portrait beside the heading so all sign-in and sign-up controls fit at normal zoom. Browser checks verify 320x568, 360x640, 375x667, 390x844, 768x1024, 1366x768 and 1440x900, plus an alpha-channel pixel check. Very small viewports, large text/zoom, validation errors and software keyboards can require normal scrolling rather than clipping controls.
+
+Presentation studio
+-------------------
+Presentation in the sidebar provides three live slides inspired by the supplied DCB status deck: team/product assignments; product situation with six-section health and dated task milestones; working websites/resources with assigned workers. Filter by product or development phase (default: each product's current phase). Member names/designations, task assignees and product owners populate contributor cards. Missing information stays marked TBA/TBC. The reference file supplies layout guidance; its example people/products are not imported into workspace records.
+
+Use Previous/Next, slide tabs, keyboard arrows while the stage is focused, eight-second autoplay, or Full screen. Print / save PDF prints all three slides. Large portfolios remain scrollable within each slide and can extend the print output beyond three physical pages. Data is derived on every render and automatically refreshes from saved workspace changes in other tabs of the same browser origin; this does not introduce cloud or multi-user synchronization. Editing stays in Products.
+
+Run `node verify-presentation.cjs` for data derivation checks. The main browser suite covers navigation, filters, live task/worker changes and all nine mobile routes. `node preview-presentation.cjs` uses an isolated browser at port 9223 to verify full-screen, cross-tab updates and a three-page sample PDF.

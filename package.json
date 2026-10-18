@@ -5,7 +5,7 @@
   "scripts": {
     "build": "node build.cjs",
     "start": "node server.cjs",
-    "test": "node verify.cjs && node verify-lifecycle.cjs && node verify-exports.cjs && node verify-auth.cjs && node verify-google.cjs && node verify-meetings.cjs && node build.cjs && node verify-deployment.cjs"
+    "test": "node verify.cjs && node verify-lifecycle.cjs && node verify-exports.cjs && node verify-presentation.cjs && node verify-auth.cjs && node verify-google.cjs && node verify-meetings.cjs && node build.cjs && node verify-deployment.cjs"
   },
   "engines": {
     "node": ">=22"

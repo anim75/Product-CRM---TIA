@@ -95,7 +95,27 @@ async function run(){
  assert.ok(await evaluate("window.exportCapture.body.includes('Kikori AI')"));
  await evaluate("download=window.originalDownload;document.querySelector('.export-panel').open=false");
 
- assert.equal(await evaluate("document.querySelectorAll('aside nav a').length"),8);
+ assert.equal(await evaluate("document.querySelectorAll('aside nav a').length"),9);
+ await evaluate("location.hash='#presentation';render()");
+ assert.equal(await evaluate("document.querySelectorAll('.deck-slide').length"),3);
+ assert.equal(await evaluate("document.querySelectorAll('.deck-slide:not([hidden])').length"),1);
+ assert.ok(await evaluate("document.querySelector('aside nav a[href=\"#presentation\"]')"));
+ await screenshot('presentation-team-desktop');
+ await evaluate("document.querySelector('#presentation-next').click()");
+ assert.equal(await evaluate('presentationIndex'),1);
+ await screenshot('presentation-status-desktop');
+ await evaluate("document.querySelector('#presentation-stage').dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}))");
+ assert.equal(await evaluate('presentationIndex'),2);
+ await screenshot('presentation-links-desktop');
+ await evaluate("window.deckTasks=structuredClone(state.tasks);state.tasks.push({id:'deck-live',product:state.products[0].id,title:'Live deck task',owner:'Live worker',workType:'prd',phase:state.products[0].phase||'Phase 1',status:'Done',due:'2026-11-01'});render()");
+ assert.ok(await evaluate("document.querySelector('[data-slide=\"0\"]').textContent.includes('Live worker')"));
+ assert.ok(await evaluate("document.querySelector('[data-slide=\"1\"]').textContent.includes('Live deck task')"));
+ await evaluate("document.querySelector('#presentation-product').value=state.products[0].id;document.querySelector('#presentation-product').dispatchEvent(new Event('change'))");
+ assert.equal(await evaluate('deckModel().products.length'),1);
+ await evaluate("document.querySelector('#presentation-play').click()");assert.ok(await evaluate('presentationTimer!==null'));
+ await evaluate("stopPresentation();state.tasks=window.deckTasks;presentationProduct='all';presentationIndex=0;location.hash='#dashboard';render()");
+ assert.equal(await evaluate('presentationTimer'),null);
+
  assert.ok(await evaluate("document.querySelectorAll('.market-featured .market-tile').length>0"));
  await evaluate("document.querySelector('#market-motion').click()");
  assert.equal(await evaluate("getComputedStyle(document.querySelector('.market-track')).animationPlayState"),'paused');
@@ -175,7 +195,7 @@ async function run(){
  await evaluate("state=structuredClone(seed);state.profile={name:'Preview User',email:'preview@example.com'};save();location.hash='#dashboard';render()");
  await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
  await screenshot('dashboard-mobile');
- for(const hash of ['dashboard','projects','timeline','meetings','campaigns','marketing','analytics','settings']){
+ for(const hash of ['dashboard','projects','timeline','meetings','campaigns','marketing','analytics','presentation','settings']){
   await evaluate(String.raw`location.hash='#${hash}';render()`);
   const dimensions=await evaluate('({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth})');
   assert.ok(dimensions.scroll<=dimensions.width+1,hash+' mobile overflow: '+JSON.stringify(dimensions));
