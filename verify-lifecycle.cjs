@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('node:assert/strict'),{sections,calculate}=require('./lifecycle.js');
+const tasks=sections.map(s=>({product:'test',phase:'Phase 1',workType:s.id,status:'Done'}));
+assert.equal(sections.reduce((n,s)=>n+s.weight,0),100);
+assert.equal(calculate(tasks,'test').score,100);
+assert.equal(calculate(tasks.map(t=>({...t,status:'In progress'})),'test').score,50);
+assert.equal(calculate(tasks.map(t=>({...t,status:'To do'})),'test').score,0);
+assert.equal(calculate([{product:'test',workType:'seo',status:'In progress'}],'test').score,7.5);
+assert.equal(calculate([],'test').score,0);
+assert.equal(calculate([...tasks,...tasks],'test').score,100,'duplicate section tasks never inflate weights');
+assert.equal(calculate([{...tasks[0],status:'Done'},{...tasks[0],status:'To do'}],'test').score,5,'section averages multiple tasks');
+assert.equal(calculate([{...tasks[0],phase:'Launch'}],'test').score,0);
+assert.equal(calculate([{...tasks[0],phase:'Launch'}],'test','Launch').score,10);
+assert.equal(calculate([{...tasks[0],product:'other'}],'test').score,0);
+assert.equal(calculate([{product:'test',status:'Done'}],'test').unclassified,1);
+assert.equal(calculate([{product:'test',status:'Done'}],'test').score,0);
+console.log('Passed: exact weights, full/half/zero scoring, fractional points, empty sections, multi-task averaging, phase/product isolation, legacy tasks and 100-point cap.');

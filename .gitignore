@@ -1,0 +1,10 @@
+.preview-browser/
+node_modules/
+.env
+.env.*
+
+.vercel/
+public/
+
+# Generated browser screenshots
+preview/
