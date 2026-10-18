@@ -23,11 +23,11 @@ async function run(){
  assert.equal(await evaluate('document.title'),'Product Growth with Imtial');
  assert.ok(await evaluate("document.querySelector('.personal-manager-image').complete && document.querySelector('.personal-manager-image').naturalWidth>0"));
  assert.equal(await evaluate("document.querySelector('.growth-goal-chip')"),null);
- assert.equal(await evaluate("document.querySelector('.portrait-onboarding strong').textContent"),'0');
+ assert.equal(await evaluate("document.querySelectorAll('.portrait-data-card,.portrait-live-summary,.portrait-product-ribbon').length"),0);
  await evaluate("window.portraitState=structuredClone(state);state.products[0].name='Updated product';state.daily=[{product:state.products[0].id,date:today(),gp:3,bl:2,robi:1}];signInDataVisual()");
- assert.equal(await evaluate("document.querySelector('.portrait-onboarding strong').textContent"),'6');
- assert.ok(await evaluate("document.querySelector('.portrait-product-ribbon').textContent.includes('Updated product')"));
- assert.equal(await evaluate("getComputedStyle(document.querySelector('.portrait-ribbon-track')).animationIterationCount"),'infinite');
+ assert.ok(await evaluate("document.querySelector('.portrait-head-analytics').textContent.includes('product health')"));
+ assert.ok(await evaluate("document.querySelector('.portrait-head-analytics').textContent.includes('Updated product')"));
+ assert.equal(await evaluate("getComputedStyle(document.querySelector('.head-stat')).animationIterationCount"),'infinite');
  await evaluate("state=window.portraitState;signInDataVisual()");
 
 
