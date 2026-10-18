@@ -36,6 +36,27 @@ async function run(){
  assert.equal(await evaluate("document.querySelectorAll('.signal-card,.momentum-tabs').length"),0);
  await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});await screenshot('signup-mobile');
  assert.ok(await evaluate('document.documentElement.scrollWidth<=document.documentElement.clientWidth+1'));
+ 
+ // Account controls must remain visible without scrolling at normal zoom.
+ for(const size of [[1440,900],[1366,768],[768,1024],[390,844],[375,667],[360,640],[320,568]]){
+  await call('Emulation.setDeviceMetricsOverride',{width:size[0],height:size[1],deviceScaleFactor:1,mobile:size[0]<=620});
+  for(const mode of ['signin','signup']){
+   await evaluate("authMode="+JSON.stringify(mode)+";render()");
+   const fit=await evaluate("(()=>{const nodes=[...document.querySelectorAll('.auth-tabs button,#signin input,#auth-submit,.auth-switch button')];return {width:innerWidth,height:innerHeight,scroll:document.documentElement.scrollHeight,controls:nodes.every(node=>{const r=node.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight+1&&r.left>=0&&r.right<=innerWidth+1})}})()");
+   assert.ok(fit.controls,'Account controls outside viewport '+size+' '+mode+' '+JSON.stringify(fit));
+   assert.ok(fit.scroll<=size[1]+1,'Account page scrolls '+size+' '+mode+' '+JSON.stringify(fit));
+  }
+ }
+ await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+ await evaluate("authMode='signup';render()");await screenshot('signup-mobile');
+ await evaluate("authMode='signin';render()");await screenshot('signin-mobile');
+ await call('Emulation.setDeviceMetricsOverride',{width:1440,height:900,deviceScaleFactor:1,mobile:false});
+ await screenshot('signin-desktop');
+ assert.equal(await evaluate("getComputedStyle(document.querySelector('.personal-manager-scene')).boxShadow"),'none');
+ assert.equal(await evaluate("getComputedStyle(document.querySelector('.personal-manager-scene')).borderTopWidth"),'0px');
+ await evaluate("new Promise((resolve,reject)=>{const image=document.querySelector('.personal-manager-image');if(image.complete&&image.naturalWidth)return resolve();image.onload=resolve;image.onerror=()=>reject(Error('Portrait did not load'))})");
+ assert.equal(await evaluate("(()=>{const image=document.querySelector('.personal-manager-image'),canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);return ctx.getImageData(0,0,1,1).data[3]})()"),0);
+ await evaluate("authMode='signup';render()");
  if(process.argv.includes('--entrance-only')){assert.deepEqual(errors,[]);ws.close();console.log('Captured final desktop/mobile entrance previews with no runtime errors or mobile overflow.');return;}
  await call('Emulation.setDeviceMetricsOverride',{width:1440,height:1100,deviceScaleFactor:1,mobile:false});
  await evaluate(String.raw`const f=document.querySelector('#signin');f.elements.name.value='QA Account';f.elements.email.value='qa@example.com';f.elements.password.value='Preview-password-123';f.elements.confirmPassword.value='Preview-password-123';document.querySelector('[data-show-password=auth-password]').click();`);

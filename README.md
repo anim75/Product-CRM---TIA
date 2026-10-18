@@ -69,3 +69,7 @@ All workspace routes include Download your data with dataset, product, inclusive
 The sign-in illustration uses the supplied image, with live onboarding, average product health, product names/scores, completed tasks and meeting counts layered over it. Saved daily metrics through today determine onboarding. Product labels scroll continuously, with reduced-motion support. Changes refresh on re-entry or browser storage events. Text is larger across the app; mobile controls use larger tap areas and 16px form text.
 
 Run `node verify-exports.cjs` for date/product/CSV cases. Browser checks also exercise the portrait load, CSV form, invalid date ranges and mobile overflow.
+
+Account screen fit and transparent portrait
+-------------------------------------------
+The account screen uses a transparent portrait cutout with no enclosing frame, border or shadow. Desktop retains the live portfolio cards; phone layouts use a compact portrait beside the heading so all sign-in and sign-up controls fit at normal zoom. Browser checks verify 320x568, 360x640, 375x667, 390x844, 768x1024, 1366x768 and 1440x900, plus an alpha-channel pixel check. Very small viewports, large text/zoom, validation errors and software keyboards can require normal scrolling rather than clipping controls.

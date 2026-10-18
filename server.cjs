@@ -3,7 +3,7 @@
 const http=require('node:http'),fs=require('node:fs/promises'),path=require('node:path');
 const {valid}=require('./meeting-format.js');
 const root=__dirname;
-const allowed=new Set(['index.html','app.css','app.js','growth.js','metrics.js','lifecycle.js','meeting-format.js','meeting-email.js','workspace.js','workspace.css','experience.css','experience.js','local-auth.js','google-workspace.js','profile.js','profile.css','polish.css','polish.js','exports.js','assets/imtial-product-manager.jpeg',...Array.from({length:14},(_,i)=>String(i+1).padStart(2,'0'))]);
+const allowed=new Set(['index.html','app.css','app.js','growth.js','metrics.js','lifecycle.js','meeting-format.js','meeting-email.js','workspace.js','workspace.css','experience.css','experience.js','local-auth.js','google-workspace.js','profile.js','profile.css','polish.css','polish.js','exports.js','assets/imtial-product-manager.jpeg','assets/imtial-product-manager-cutout.png',...Array.from({length:14},(_,i)=>String(i+1).padStart(2,'0'))]);
 const string={type:'string'},list={type:'array',items:string};
 const schema={type:'object',additionalProperties:false,properties:{subject:string,summary:string,decisions:list,actions:list,timeline:list,conclusion:string},required:['subject','summary','decisions','actions','timeline','conclusion']};
 async function summarize(notes,{apiKey,model,request=fetch}){
@@ -31,7 +31,7 @@ function createServer(config={}){return http.createServer(async(req,res)=>{const
  const file=decodeURIComponent(url.pathname==='/'?'index.html':url.pathname.slice(1));
  const numbered=/^\d{2}-[a-z-]+\.html$/.test(file)&&allowed.has(file.slice(0,2));
  if(!allowed.has(file)&&!numbered&&!/^design-reference\/\d{2}-[a-z-]+\.html$/.test(file))return json(404,{error:'Not found.'});
- const data=await fs.readFile(path.join(root,file)),type={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.jpeg':'image/jpeg'}[path.extname(file)];res.writeHead(200,{'Content-Type':type,'Cache-Control':'no-cache'});res.end(req.method==='HEAD'?undefined:data);
+ const data=await fs.readFile(path.join(root,file)),type={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.jpeg':'image/jpeg','.png':'image/png'}[path.extname(file)];res.writeHead(200,{'Content-Type':type,'Cache-Control':'no-cache'});res.end(req.method==='HEAD'?undefined:data);
  }catch(error){json(error.code==='ENOENT'?404:400,{error:'Request could not be processed.'});}});}
 if(require.main===module){const port=Number(process.env.PORT||8080);createServer().listen(port,'127.0.0.1',()=>console.log(`Local preview: http://localhost:${port}/#meetings`));}
 module.exports={createServer,summarize};
