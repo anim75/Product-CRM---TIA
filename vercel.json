@@ -25,6 +25,10 @@
   ],
   "rewrites": [
     {
+      "source": "/sitwithimtial/",
+      "destination": "/index.html"
+    },
+    {
       "source": "/sitwithimtial",
       "destination": "/index.html"
     },
