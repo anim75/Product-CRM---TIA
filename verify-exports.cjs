@@ -1,0 +1,15 @@
+﻿'use strict';
+const assert=require('node:assert/strict'),e=require('./exports.js'),health=require('./lifecycle.js');
+const state={products:[{id:'p',name:'=Unsafe name',start:'2026-10-01',deadline:'2026-10-31',phase:'Phase 1',members:[{name:'Tanjim',designation:'PM'}]}],tasks:[{id:'t',product:'p',title:'বাংলা, "task"',start:'2026-10-02',due:'2026-10-12',workType:'prd',status:'Done',phase:'Phase 1'},{id:'u',product:'p',title:'Undated'}],daily:[{date:'2026-10-10',product:'p',gp:2},{date:'2026-10-11',product:'p',gp:3}],campaigns:[{product:'p',name:'Launch',start:'2026-10-01',end:'2026-10-15',winners:['Winner 1','Winner 2']}],budgets:{'p|2026-10':1000},profile:{name:'Tanjim',email:'test@example.com'},currency:'BDT',notes:[],files:[]};
+assert.equal(e.rows(state,'daily',{from:'2026-10-10',to:'2026-10-10'}).length,1);
+assert.equal(e.rows(state,'tasks',{from:'2026-10-10',to:'2026-10-10',undated:false}).length,1);
+assert.equal(e.rows(state,'tasks',{from:'2026-10-10',to:'2026-10-10',undated:true}).length,2);
+assert.equal(e.rows(state,'daily',{product:'other'}).length,0);
+assert.throws(()=>e.rows(state,'all',{from:'2026-10-11',to:'2026-10-10'}),/Start date/);
+assert.equal(e.rows(state,'winners',{}).length,2);
+assert.equal(e.rows(state,'members',{}).length,1);
+assert.equal(e.rows(state,'health',{},health.calculate).length,6);
+assert.equal(e.rows(state,'budgets',{from:'2026-10-31',to:'2026-10-31'}).length,1);
+assert.equal(e.rows(state,'settings',{undated:false}).length,0);
+const csv=e.csv(e.rows(state,'all',{},health.calculate));assert.ok(csv.startsWith('\uFEFF'));assert.ok(csv.includes("'=Unsafe name"));assert.ok(csv.includes('বাংলা, ""task""'));assert.ok(!csv.includes('access_token'));assert.ok(e.csv([{name:'  =SUM(A1)'}]).includes("  '=SUM(A1)"));
+console.log('Passed: inclusive CSV dates, overlapping ranges, undated opt-in, product filtering, all datasets, monthly budgets, Unicode and formula escaping.');

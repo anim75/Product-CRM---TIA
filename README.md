@@ -61,3 +61,11 @@ Vercel deployment
 `vercel.json` builds the 16 app assets into `public/` using `node build.cjs`. Only that directory is served as static content. `api/meeting-summary.js` supplies the optional AI endpoint; configure OPENAI_API_KEY and OPENAI_MODEL privately in Vercel if needed. Local formatting works without them. Run `node verify-deployment.cjs` after building.
 
 Deploy this directory as an Other/framework-null project named product-growth-with-imtial. The connected account must have permission to create that project. Add the resulting HTTPS origin to the Google OAuth client's authorized JavaScript origins. Browser-local data on localhost does not move to the deployed origin automatically: export a JSON workspace backup from the old origin and restore it on the new one. Local account credentials remain separate.
+
+Readable text, responsive layout and CSV exports
+------------------------------------------------
+All workspace routes include Download your data with dataset, product, inclusive start/end dates and an explicit include-undated toggle. Section-level Download CSV buttons reuse those filters. Exports cover products, six-section health, tasks, members, meetings, campaigns, winners, daily marketing/audience metrics, monthly budgets, resources, notes, KPI snapshots and non-secret workspace settings. Product/task/campaign ranges match by overlap; health/team use product dates. CSV includes UTF-8 BOM, quoted multiline fields and spreadsheet formula escaping. CSV is for analysis; use JSON or Sheets backups for restore.
+
+The sign-in illustration uses the supplied image, with live onboarding, average product health, product names/scores, completed tasks and meeting counts layered over it. Saved daily metrics through today determine onboarding. Product labels scroll continuously, with reduced-motion support. Changes refresh on re-entry or browser storage events. Text is larger across the app; mobile controls use larger tap areas and 16px form text.
+
+Run `node verify-exports.cjs` for date/product/CSV cases. Browser checks also exercise the portrait load, CSV form, invalid date ranges and mobile overflow.

@@ -15,11 +15,22 @@ async function run(){
  await evaluate(String.raw`state=structuredClone(seed);state.profile={name:'Preview User',email:'preview@example.com'};save();location.hash='#dashboard';render();`);
  await waitFor("document.querySelector('.overview-hero')");
  await evaluate('document.fonts.ready');
+ assert.ok(await evaluate("document.querySelector('#section-export-form')"));
  const screenshot=async name=>{await evaluate('new Promise(r=>setTimeout(r,1200))');await evaluate("document.querySelector('#toast').style.display='none'");const r=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});await fs.mkdir('preview',{recursive:true});await fs.writeFile('preview/'+name+'.png',Buffer.from(r.data,'base64'));};
  // Test account access in the isolated profile before exercising the workspace.
  await evaluate("localStorage.removeItem(LocalAccount.storageKey);state.profile=null;authMode='signup';location.hash='#signin';render()");
  await waitFor("document.querySelector('[name=confirmPassword]')");await screenshot('signup-desktop');
  assert.equal(await evaluate('document.title'),'Product Growth with Imtial');
+ assert.ok(await evaluate("document.querySelector('.personal-manager-image').complete && document.querySelector('.personal-manager-image').naturalWidth>0"));
+ assert.equal(await evaluate("document.querySelector('.growth-goal-chip')"),null);
+ assert.equal(await evaluate("document.querySelector('.portrait-onboarding strong').textContent"),'0');
+ await evaluate("window.portraitState=structuredClone(state);state.products[0].name='Updated product';state.daily=[{product:state.products[0].id,date:today(),gp:3,bl:2,robi:1}];signInDataVisual()");
+ assert.equal(await evaluate("document.querySelector('.portrait-onboarding strong').textContent"),'6');
+ assert.ok(await evaluate("document.querySelector('.portrait-product-ribbon').textContent.includes('Updated product')"));
+ assert.equal(await evaluate("getComputedStyle(document.querySelector('.portrait-ribbon-track')).animationIterationCount"),'infinite');
+ await evaluate("state=window.portraitState;signInDataVisual()");
+
+
  assert.equal(await evaluate("document.querySelector('#pause-signals')"),null);
  assert.equal(await evaluate("getComputedStyle(document.querySelector('.manager-art')).animationIterationCount"),'infinite');
  assert.equal(await evaluate("document.querySelectorAll('.signal-card,.momentum-tabs').length"),0);
@@ -56,6 +67,13 @@ async function run(){
  await screenshot('profile-settings-desktop');
  await evaluate("state=structuredClone(seed);state.profile={name:'Preview User',email:'preview@example.com'};save();location.hash='#dashboard';render()");
  await screenshot('dashboard-desktop');
+ await evaluate("document.querySelector('.export-panel').open=true");
+ await evaluate("const form=document.querySelector('#section-export-form');form.elements.from.value='2026-10-20';form.elements.to.value='2026-10-01';form.requestSubmit()");
+ assert.ok(await evaluate("document.querySelector('#export-status').textContent.includes('Start date')"));
+ await evaluate("document.querySelector('#export-clear').click();const form=document.querySelector('#section-export-form');form.elements.type.value='products';window.exportCapture=null;window.originalDownload=download;download=(name,body,type)=>window.exportCapture={name,body,type};form.requestSubmit()");
+ assert.ok(await evaluate("window.exportCapture.body.includes('Kikori AI')"));
+ await evaluate("download=window.originalDownload;document.querySelector('.export-panel').open=false");
+
  assert.equal(await evaluate("document.querySelectorAll('aside nav a').length"),8);
  assert.ok(await evaluate("document.querySelectorAll('.market-featured .market-tile').length>0"));
  await evaluate("document.querySelector('#market-motion').click()");

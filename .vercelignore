@@ -1,0 +1,12 @@
+﻿.git
+.vercel
+.env*
+.vscode
+preview
+.preview-browser
+node_modules
+public
+design-reference
+verify*.cjs
+preview-check.cjs
+CLAUDE.md
