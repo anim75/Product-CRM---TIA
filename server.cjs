@@ -15,6 +15,7 @@ async function summarize(notes,{apiKey,model,request=fetch}){
 }
 function createServer(config={}){return http.createServer(async(req,res)=>{const json=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data));};try{
  const url=new URL(req.url,'http://localhost');
+ if(url.pathname==='/sitwithimtial'||url.pathname.startsWith('/sitwithimtial/'))url.pathname=url.pathname.slice('/sitwithimtial'.length)||'/';
  if(!/^((localhost|127\.0\.0\.1)(:\d+)?)$/.test(req.headers.host||''))return json(403,{error:'Local access only.'});
  if(url.pathname==='/api/meeting-summary'){
   if(req.method!=='POST')return json(405,{error:'Use POST.'});

@@ -3,7 +3,7 @@ const {summarize}=require('../server.cjs');
 module.exports=async function handler(req,res){
  res.setHeader('Cache-Control','no-store');
  if(req.method!=='POST'){res.setHeader('Allow','POST');return res.status(405).json({error:'Use POST.'});}
- if(req.headers.origin){try{if(new URL(req.headers.origin).host!==req.headers.host)return res.status(403).json({error:'Same-origin requests only.'});}catch{return res.status(403).json({error:'Invalid origin.'});}}
+ if(req.headers.origin){try{if(new URL(req.headers.origin).host!==req.headers.host&&!['https://www.tanjimimtial.com','https://tanjimimtial.com','https://portfolio-anim75s-projects.vercel.app','https://portfolio-dun-rho-89.vercel.app'].includes(req.headers.origin))return res.status(403).json({error:'Same-origin requests only.'});}catch{return res.status(403).json({error:'Invalid origin.'});}}
  if(!req.headers['content-type']?.startsWith('application/json'))return res.status(415).json({error:'Use application/json.'});
  const apiKey=process.env.OPENAI_API_KEY,model=process.env.OPENAI_MODEL;
  if(!apiKey||!model)return res.status(503).json({error:'AI is not configured. Use local formatting, or configure OPENAI_API_KEY and OPENAI_MODEL in Vercel.'});

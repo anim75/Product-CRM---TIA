@@ -8,3 +8,6 @@ public/
 
 # Generated browser screenshots
 preview/
+.vercel
+.env*
+.domain-routing/
