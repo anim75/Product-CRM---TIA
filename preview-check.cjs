@@ -155,6 +155,15 @@ async function run(){
  await waitFor("document.querySelector('#account-status').textContent.includes('HTTP')");
  assert.equal(await evaluate("state.products.some(p=>p.name==='Must not create')"),false);
  assert.equal(await evaluate('vaultSession.records.length'),4);
+ await evaluate("render();const first=document.querySelector('[data-account-entry]');first.querySelector('[name=product]').value=state.products[0].id;first.querySelector('[name=username]').value='separate-first@example.com';first.querySelector('[name=password]').value='Separate-first-password';first.querySelector('[data-add-account-row]').click();const second=document.querySelectorAll('[data-account-entry]')[1];second.querySelector('[name=product]').value=state.products[1].id;second.querySelector('[name=username]').value='separate-second@example.com';second.querySelector('[name=password]').value='Separate-second-password';document.querySelector('#product-account-form').requestSubmit()");
+ await waitFor('vaultSession?.records.length===6');
+ assert.equal(await evaluate("vaultSession.records.find(a=>a.username==='separate-first@example.com').product===state.products[0].id"),true);
+ assert.equal(await evaluate("vaultSession.records.find(a=>a.username==='separate-second@example.com').product===state.products[1].id"),true);
+ assert.equal(await evaluate("vaultSession.records.find(a=>a.username==='separate-first@example.com').password"),'Separate-first-password');
+ assert.equal(await evaluate("vaultSession.records.find(a=>a.username==='separate-second@example.com').password"),'Separate-second-password');
+ await evaluate("document.querySelector('#account-add-top').click()");
+ assert.equal(await evaluate("document.querySelectorAll('[data-account-entry]').length"),2);
+
 
  await evaluate("document.querySelector('[data-action=logout]').click()");
  assert.equal(await evaluate('vaultSession'),null);
