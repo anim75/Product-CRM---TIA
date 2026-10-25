@@ -104,6 +104,17 @@ async function run(){
  await screenshot('designs-desktop');
  await evaluate("document.querySelector('[data-design-edit]').click();const f=document.querySelector('#design-links-form');f.elements.name.value='Updated design';f.requestSubmit()");
  assert.ok(await evaluate("state.files.some(f=>f.category==='design'&&f.name==='Updated design')"));
+ await evaluate("document.querySelector('#design-add-more').click();const rows=document.querySelectorAll('[data-design-entry]');rows[0].querySelector('[name=designUrl]').value='https://www.figma.com/design/one';const select=rows[1].querySelector('[name=product]');select.value='__new__';select.dispatchEvent(new Event('change',{bubbles:true}));rows[1].querySelector('[name=newProductName]').value='Batch design product';rows[1].querySelector('[name=prototypeUrl]').value='https://www.figma.com/proto/two'");
+ assert.equal(await evaluate("document.querySelectorAll('[data-design-entry]').length"),2);
+ await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+ assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth+1'));
+ await screenshot('designs-batch-mobile');
+ await call('Emulation.setDeviceMetricsOverride',{width:1440,height:1100,deviceScaleFactor:1,mobile:false});
+ await evaluate("document.querySelector('#design-links-form').requestSubmit()");
+ assert.equal(await evaluate("state.products.filter(p=>p.name==='Batch design product').length"),1);
+ assert.ok(await evaluate("state.files.some(f=>f.category==='prototype'&&f.url.endsWith('/proto/two'))"));
+ assert.equal(await evaluate('validBackup(state)'),true);
+
  await evaluate("localStorage.removeItem(ProductVault.storageKey);lockVault(false);location.hash='#credentials';render();const f=document.querySelector('#vault-access-form');f.elements.passphrase.value='Vault-passphrase-123';f.elements.confirmation.value='Vault-passphrase-123';f.requestSubmit()");
  await waitFor("document.querySelector('#product-account-form')");
  await evaluate("const f=document.querySelector('#product-account-form');f.elements.name.value='Admin account';f.elements.username.value='admin@example.com';f.elements.password.value='Secret-vault-123';f.elements.url.value='example.com/login';f.requestSubmit()");
@@ -128,6 +139,23 @@ async function run(){
  await evaluate("lockVault(false);localStorage.removeItem(ProductVault.storageKey);render();const f=document.querySelector('#vault-restore-form'),transfer=new DataTransfer();transfer.items.add(new File([window.vaultEncryptedBackup],'vault.json',{type:'application/json'}));f.elements.backup.files=transfer.files;f.elements.passphrase.value='Vault-passphrase-123';f.requestSubmit()");
  await waitFor('vaultSession?.records.length===2');
  assert.equal(await evaluate("vaultSession.records[0].password"),'Updated-vault-secret');
+ await evaluate("const row=document.querySelector('[data-account-entry]'),select=row.querySelector('[name=product]');select.value='__new__';select.dispatchEvent(new Event('change',{bubbles:true}));row.querySelector('[name=newProductName]').value='Batch vault product';row.querySelector('[name=username]').value='batch-admin@example.com';row.querySelector('[name=password]').value='Batch-secret-one';document.querySelector('#account-add-more').click();const second=document.querySelectorAll('[data-account-entry]')[1];second.querySelector('[name=username]').value='batch-dev@example.com';second.querySelector('[name=password]').value='Batch-secret-two'");
+ assert.equal(await evaluate("document.querySelectorAll('[data-account-entry]').length"),2);
+ await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+ assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth+1'));
+ await screenshot('credentials-batch-mobile');
+ await call('Emulation.setDeviceMetricsOverride',{width:1440,height:1100,deviceScaleFactor:1,mobile:false});
+ await evaluate("document.querySelector('#product-account-form').requestSubmit()");
+ await waitFor('vaultSession?.records.length===4');
+ assert.equal(await evaluate("state.products.filter(p=>p.name==='Batch vault product').length"),1);
+ assert.equal(await evaluate("document.querySelectorAll('.account-card').length"),2);
+ assert.equal(await evaluate("localStorage.getItem(ProductVault.storageKey).includes('Batch-secret')"),false);
+ assert.equal(await evaluate("JSON.stringify(state).includes('Batch-secret')"),false);
+ await evaluate("const row=document.querySelector('[data-account-entry]'),select=row.querySelector('[name=product]');select.value='__new__';select.dispatchEvent(new Event('change',{bubbles:true}));row.querySelector('[name=newProductName]').value='Must not create';row.querySelector('[name=username]').value='one@example.com';row.querySelector('[name=password]').value='One-secret';document.querySelector('#account-add-more').click();const second=document.querySelectorAll('[data-account-entry]')[1];second.querySelector('[name=username]').value='two@example.com';second.querySelector('[name=password]').value='Two-secret';second.querySelector('[name=url]').value='javascript:alert(1)';document.querySelector('#product-account-form').requestSubmit()");
+ await waitFor("document.querySelector('#account-status').textContent.includes('HTTP')");
+ assert.equal(await evaluate("state.products.some(p=>p.name==='Must not create')"),false);
+ assert.equal(await evaluate('vaultSession.records.length'),4);
+
  await evaluate("document.querySelector('[data-action=logout]').click()");
  assert.equal(await evaluate('vaultSession'),null);
  await evaluate("state=window.toolsState;save();location.hash='#dashboard';render()");

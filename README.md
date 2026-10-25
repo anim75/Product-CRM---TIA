@@ -97,3 +97,9 @@ Credentials & Accounts supports multiple named logins per product with user/emai
 Use the vault's own Download encrypted backup and Restore controls to move devices or origins. Losing the passphrase makes the encrypted backup unrecoverable. Lock is available manually, occurs on sign-out or entering Sign in, and follows 15 minutes without vault activity. Switching away masks visible account passwords; vault changes in another tab lock the current session to avoid overwriting a newer version. Account edit, show/hide, user/password copy and removal require an unlocked vault.
 
 `node verify-vault.cjs` verifies encryption round trips, random salt/IV behavior, non-exportable keys, missing plaintext, invalid passphrases and tampered-backup rejection. Browser checks cover design links, multiple accounts, edits, reveal/hide, wrong-key rejection, encrypted restore, sign-out locking and all eleven mobile routes.
+
+Multiple-entry forms
+--------------------
+Both product tools now have Add more buttons and save multiple independent rows together. Each row can choose an existing product or + Add new product. Repeated new names reuse the same product (case-insensitive), while a new name creates a Phase 1 product with dates/team still unset. Credentials require product, username/email and password; the account label and login URL are optional. Design rows require a design URL, prototype URL or both; version labels are optional. Existing edit and remove controls remain available.
+
+All rows are validated before saving. New products and encrypted account records are written together with rollback if a browser-storage write fails. No account passwords are copied into product records or standard exports. `node verify-batch.cjs` tests product reuse and storage rollback; browser checks exercise multi-row saving, inline creation, mobile layout and invalid-row rejection without partial data changes.

@@ -1,0 +1,6 @@
+﻿(function(root){
+'use strict';
+function plan(products,rows,owner,makeId){const created=[],ids=rows.map(row=>{if(row.product!=='__new__'){if(!products.some(p=>p.id===row.product))throw Error('Choose a product or add a new product name.');return row.product;}const name=String(row.newProductName||'').trim();if(!name||name.length>120)throw Error('Enter a new product name (up to 120 characters).');const existing=[...products,...created].find(p=>p.name.trim().toLowerCase()===name.toLowerCase());if(existing)return existing.id;const p={id:makeId(),name,owner,description:'',deadline:'',start:'',phase:'Phase 1',members:[],url:''};created.push(p);return p.id;});return {ids,created};}
+function write(storage,entries){const old=entries.map(([key])=>[key,storage.getItem(key)]),written=[];try{for(const [key,value]of entries){storage.setItem(key,value);written.push(key);}}catch(error){for(const [key,value]of old.filter(([key])=>written.includes(key)).reverse()){try{if(value===null)storage.removeItem(key);else storage.setItem(key,value);}catch{}}throw Error('Could not save your entries. Browser storage may be full or unavailable.');}}
+const api={plan,write};root.ProductBatch=api;if(typeof module!=='undefined')module.exports=api;
+})(globalThis);
