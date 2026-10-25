@@ -69,3 +69,6 @@
 .head-stat:nth-child(1){left:4%;top:27%}.head-stat:nth-child(2){left:96%;top:27%}.head-stat:nth-child(3){left:7%;top:4%}.head-stat:nth-child(4){left:93%;top:4%}.head-stat:nth-child(5){left:50%;top:-6%}.head-stat:nth-child(6){left:3%;top:46%}.head-stat:nth-child(7){left:97%;top:46%}
 @media(max-width:620px){.head-stat:nth-child(1){left:13%;top:35%}.head-stat:nth-child(2){left:87%;top:35%}}
 @media(prefers-reduced-motion:reduce){.head-stat{animation:none!important}}
+/* Let the portrait sit slightly lower while keeping account controls in place. */
+.clean-entry .personal-manager-image{translate:0 20px}
+@media(max-width:620px){.clean-entry .personal-manager-image{translate:0 7px}.head-stat strong{overflow-wrap:anywhere}}
