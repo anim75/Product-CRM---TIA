@@ -95,7 +95,43 @@ async function run(){
  assert.ok(await evaluate("window.exportCapture.body.includes('Kikori AI')"));
  await evaluate("download=window.originalDownload;document.querySelector('.export-panel').open=false");
 
- assert.equal(await evaluate("document.querySelectorAll('aside nav a').length"),9);
+ assert.equal(await evaluate("document.querySelectorAll('aside nav a').length"),11);
+ assert.equal(await evaluate("document.querySelectorAll('.dashboard-tool-shortcuts a').length"),2);
+ await evaluate("window.toolsState=structuredClone(state);location.hash='#designs';render()");
+ await evaluate("const f=document.querySelector('#design-links-form');f.elements.name.value='Phase 1 design';f.elements.designUrl.value='https://www.figma.com/design/test';f.elements.prototypeUrl.value='https://www.figma.com/proto/test';f.requestSubmit()");
+ assert.equal(await evaluate("state.files.filter(f=>f.category==='design'||f.category==='prototype').length"),2);
+ assert.equal(await evaluate('validBackup(state)'),true);
+ await screenshot('designs-desktop');
+ await evaluate("document.querySelector('[data-design-edit]').click();const f=document.querySelector('#design-links-form');f.elements.name.value='Updated design';f.requestSubmit()");
+ assert.ok(await evaluate("state.files.some(f=>f.category==='design'&&f.name==='Updated design')"));
+ await evaluate("localStorage.removeItem(ProductVault.storageKey);lockVault(false);location.hash='#credentials';render();const f=document.querySelector('#vault-access-form');f.elements.passphrase.value='Vault-passphrase-123';f.elements.confirmation.value='Vault-passphrase-123';f.requestSubmit()");
+ await waitFor("document.querySelector('#product-account-form')");
+ await evaluate("const f=document.querySelector('#product-account-form');f.elements.name.value='Admin account';f.elements.username.value='admin@example.com';f.elements.password.value='Secret-vault-123';f.elements.url.value='example.com/login';f.requestSubmit()");
+ await waitFor('vaultSession?.records.length===1');
+ assert.equal(await evaluate("localStorage.getItem(ProductVault.storageKey).includes('Secret-vault-123')"),false);
+ assert.equal(await evaluate("JSON.stringify(state).includes('Secret-vault-123')"),false);
+ await evaluate("const f=document.querySelector('#product-account-form');f.elements.name.value='Developer';f.elements.username.value='dev@example.com';f.elements.password.value='Developer-secret';f.requestSubmit()");
+ await waitFor('vaultSession?.records.length===2');
+ assert.equal(await evaluate("document.querySelectorAll('.account-card').length"),2);
+ await screenshot('credentials-desktop');
+ await evaluate("document.querySelector('[data-account-edit]').click();const f=document.querySelector('#product-account-form');f.elements.password.value='Updated-vault-secret';f.requestSubmit()");
+ await waitFor("vaultSession?.records[0].password==='Updated-vault-secret'");
+ await evaluate("document.querySelector('[data-account-reveal]').click()");
+ assert.equal(await evaluate("document.querySelector('[data-account-secret]').value"),'Updated-vault-secret');
+ await evaluate("document.querySelector('[data-account-reveal]').click()");
+ assert.equal(await evaluate("document.querySelector('[data-account-secret]').value"),'********');
+ await evaluate("window.vaultEncryptedBackup=localStorage.getItem(ProductVault.storageKey);document.querySelector('#vault-lock').click();const f=document.querySelector('#vault-access-form');f.elements.passphrase.value='Wrong-vault-passphrase';f.requestSubmit()");
+ await waitFor("document.querySelector('#vault-access-status').textContent.includes('Could not unlock')");
+ assert.equal(await evaluate('vaultSession'),null);
+ await evaluate("const f=document.querySelector('#vault-access-form');f.elements.passphrase.value='Vault-passphrase-123';f.requestSubmit()");
+ await waitFor('vaultSession?.records.length===2');
+ await evaluate("lockVault(false);localStorage.removeItem(ProductVault.storageKey);render();const f=document.querySelector('#vault-restore-form'),transfer=new DataTransfer();transfer.items.add(new File([window.vaultEncryptedBackup],'vault.json',{type:'application/json'}));f.elements.backup.files=transfer.files;f.elements.passphrase.value='Vault-passphrase-123';f.requestSubmit()");
+ await waitFor('vaultSession?.records.length===2');
+ assert.equal(await evaluate("vaultSession.records[0].password"),'Updated-vault-secret');
+ await evaluate("document.querySelector('[data-action=logout]').click()");
+ assert.equal(await evaluate('vaultSession'),null);
+ await evaluate("state=window.toolsState;save();location.hash='#dashboard';render()");
+
  await evaluate("location.hash='#presentation';render()");
  assert.equal(await evaluate("document.querySelectorAll('.deck-slide').length"),3);
  assert.equal(await evaluate("document.querySelectorAll('.deck-slide:not([hidden])').length"),1);
@@ -195,7 +231,7 @@ async function run(){
  await evaluate("state=structuredClone(seed);state.profile={name:'Preview User',email:'preview@example.com'};save();location.hash='#dashboard';render()");
  await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
  await screenshot('dashboard-mobile');
- for(const hash of ['dashboard','projects','timeline','meetings','campaigns','marketing','analytics','presentation','settings']){
+ for(const hash of ['dashboard','projects','timeline','meetings','campaigns','marketing','analytics','designs','credentials','presentation','settings']){
   await evaluate(String.raw`location.hash='#${hash}';render()`);
   const dimensions=await evaluate('({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth})');
   assert.ok(dimensions.scroll<=dimensions.width+1,hash+' mobile overflow: '+JSON.stringify(dimensions));

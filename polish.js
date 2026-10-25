@@ -10,6 +10,6 @@ function signInDataVisual(){const scene=$('.manager-scene');if(!scene)return;con
 
 const renderBeforePolish=render;
 let lastExportRoute='';
-render=function(){renderBeforePolish();if(!state.profile||route()==='signin'){signInDataVisual();return;}const r=route();if(r==='presentation')return;if(lastExportRoute!==r){exportType=exportDefaults[r]||'all';lastExportRoute=r;}const view=$('#view'),holder=document.createElement('div');holder.innerHTML=exportToolbar();const bar=holder.firstElementChild;if(r==='dashboard'){view.querySelector('.overview-hero')?.insertAdjacentElement('afterend',bar);}else view.prepend(bar);addComponentExports();bindExports();};
+render=function(){renderBeforePolish();if(!state.profile||route()==='signin'){signInDataVisual();return;}const r=route();if(['presentation','designs','credentials'].includes(r))return;if(lastExportRoute!==r){exportType=exportDefaults[r]||'all';lastExportRoute=r;}const view=$('#view'),holder=document.createElement('div');holder.innerHTML=exportToolbar();const bar=holder.firstElementChild;if(r==='dashboard'){view.querySelector('.overview-hero')?.insertAdjacentElement('afterend',bar);}else view.prepend(bar);addComponentExports();bindExports();};
 window.addEventListener('storage',e=>{if(e.key===key&&(!state.profile||route()==='signin')){try{const updated=JSON.parse(e.newValue);if(updated&&Array.isArray(updated.products)&&Array.isArray(updated.tasks)&&Array.isArray(updated.meetings)){state=updated;render();}}catch{}}});
 render();

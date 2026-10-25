@@ -1,0 +1,14 @@
+﻿(function(root){
+'use strict';
+const storageKey='imtial-product-vault-v1',iterations=310000;
+const encode=bytes=>{let text='';for(const n of bytes)text+=String.fromCharCode(n);return btoa(text);};
+const decode=value=>Uint8Array.from(atob(value),c=>c.charCodeAt(0));
+function valid(envelope){try{return envelope?.version===1&&envelope.iterations===iterations&&typeof envelope.salt==='string'&&decode(envelope.salt).length===16&&typeof envelope.iv==='string'&&decode(envelope.iv).length===12&&typeof envelope.ciphertext==='string'&&envelope.ciphertext.length<7000000&&decode(envelope.ciphertext).length>=16;}catch{return false;}}
+function validRecords(records){return Array.isArray(records)&&records.every(r=>r&&['id','product','name','username','password'].every(k=>typeof r[k]==='string')&&r.id&&r.product&&r.name.trim()&&r.username.trim()&&r.password)&&new Set(records.map(r=>r.id)).size===records.length;}
+async function derive(passphrase,salt){const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(passphrase),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);}
+async function seal(key,records,salt){if(!validRecords(records))throw Error('Account details are invalid.');const iv=crypto.getRandomValues(new Uint8Array(12)),ciphertext=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(records)));return {version:1,iterations,salt,iv:encode(iv),ciphertext:encode(new Uint8Array(ciphertext))};}
+async function create(passphrase,confirmation){if(typeof passphrase!=='string'||passphrase.length<12||passphrase.length>256)throw Error('Use a vault passphrase between 12 and 256 characters.');if(passphrase!==confirmation)throw Error('The vault passphrases do not match.');const salt=crypto.getRandomValues(new Uint8Array(16)),key=await derive(passphrase,salt),envelope=await seal(key,[],encode(salt));return {key,records:[],envelope};}
+async function unlock(envelope,passphrase){if(!valid(envelope))throw Error('This is not a valid encrypted vault backup.');try{const key=await derive(passphrase,decode(envelope.salt)),plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:decode(envelope.iv)},key,decode(envelope.ciphertext)),records=JSON.parse(new TextDecoder().decode(plain));if(!validRecords(records))throw Error();return {key,records,envelope};}catch{throw Error('Could not unlock the vault. Check the passphrase and backup file.');}}
+function read(storage){const raw=storage.getItem(storageKey);if(!raw)return null;const envelope=JSON.parse(raw);if(!valid(envelope))throw Error('The stored vault is invalid. Restore a valid encrypted backup.');return envelope;}
+const api={storageKey,valid,validRecords,create,unlock,seal,read};root.ProductVault=api;if(typeof module!=='undefined')module.exports=api;
+})(globalThis);

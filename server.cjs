@@ -3,7 +3,7 @@
 const http=require('node:http'),fs=require('node:fs/promises'),path=require('node:path');
 const {valid}=require('./meeting-format.js');
 const root=__dirname;
-const allowed=new Set(['index.html','app.css','app.js','growth.js','metrics.js','lifecycle.js','meeting-format.js','meeting-email.js','workspace.js','workspace.css','experience.css','experience.js','local-auth.js','google-workspace.js','profile.js','profile.css','polish.css','polish.js','exports.js','presentation-data.js','presentation.js','presentation.css','assets/imtial-product-manager.jpeg','assets/imtial-product-manager-cutout.png',...Array.from({length:14},(_,i)=>String(i+1).padStart(2,'0'))]);
+const allowed=new Set(['index.html','app.css','app.js','growth.js','metrics.js','lifecycle.js','meeting-format.js','meeting-email.js','workspace.js','workspace.css','experience.css','experience.js','local-auth.js','google-workspace.js','profile.js','profile.css','polish.css','polish.js','exports.js','product-vault.js','product-tools.js','product-tools.css','presentation-data.js','presentation.js','presentation.css','assets/imtial-product-manager.jpeg','assets/imtial-product-manager-cutout.png',...Array.from({length:14},(_,i)=>String(i+1).padStart(2,'0'))]);
 const string={type:'string'},list={type:'array',items:string};
 const schema={type:'object',additionalProperties:false,properties:{subject:string,summary:string,decisions:list,actions:list,timeline:list,conclusion:string},required:['subject','summary','decisions','actions','timeline','conclusion']};
 async function summarize(notes,{apiKey,model,request=fetch}){
